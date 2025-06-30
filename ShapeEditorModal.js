@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Modal,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  FlatList,
+Modal,View,Text,TextInput,TouchableOpacity,StyleSheet,FlatList,
 } from 'react-native';
 
 const GRID_DIM = 4; 
@@ -57,8 +51,6 @@ const handleSave = () => {
   });
 };
 
-
-  // Render one cell for the grid editor
   const renderCell = (row, col) => {
     const key = `${row},${col}`;
     const selected = selectedCells.has(key);
@@ -73,8 +65,6 @@ const handleSave = () => {
       />
     );
   };
-
-  // Render the grid of 4x4 cells
   const renderGrid = () => {
     const rows = [];
     for (let r = 0; r < GRID_DIM; r++) {
