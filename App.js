@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import {View, Text, TouchableOpacity, Modal, TextInput, StyleSheet, Dimensions, ScrollView, Linking, PanResponder, Platform,} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-
 import ShapeEditorModal from './ShapeEditorModal'; 
 
 //beta rotation
@@ -222,7 +221,7 @@ export default function App() {
         <Icon name="settings-outline" size={24} color="black" />
       </TouchableOpacity>
 
-      {!hidden && <Text style={styles.title}>Designer</Text>}
+      {!hidden && <Text style={styles.title}>GriDesigner 1.0.0</Text>}
 
       {!started ? (
         <>
