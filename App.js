@@ -338,13 +338,13 @@ export default function App() {
                 style={styles.addShapeButton}
                 onPress={() => save(grid)}
                 >
-                  Save
+                  <Text style={styles.shapeText}>Save</Text>
                 </TouchableOpacity>
               <TouchableOpacity
                 style={styles.addShapeButton}
                 onPress={loadGrid}
                 >
-                  Load
+                  <Text style={styles.shapeText}>Load</Text>
                 </TouchableOpacity>
             </ScrollView>
           </View>
