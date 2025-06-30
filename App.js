@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import {View, Text, TouchableOpacity, Modal, TextInput, StyleSheet, Dimensions, ScrollView, Linking, PanResponder, Platform, Pressable,} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ShapeEditorModal from './ShapeEditorModal'; 
+import { save, load } from './save';
 document.addEventListener('contextmenu', event => event.preventDefault());
 //beta rotation
 const rotateShape = (shape) => {
@@ -219,7 +220,13 @@ export default function App() {
     setShapes([...shapes, newShape]);
     setShowEditor(false);
   };
-
+  const loadGrid = async() => {
+    await load().then(gridData => {
+      setGrid(gridData)
+    }).catch(err => {
+      console.error('Failed to load grid:', err)
+    })
+  }
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -327,6 +334,18 @@ export default function App() {
               >
                 <Text style={styles.addShapeText}>+ Add Shape</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.addShapeButton}
+                onPress={() => save(grid)}
+                >
+                  Save
+                </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.addShapeButton}
+                onPress={loadGrid}
+                >
+                  Load
+                </TouchableOpacity>
             </ScrollView>
           </View>
         </>
