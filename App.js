@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
-import {View, Text, TouchableOpacity, Modal, TextInput, StyleSheet, Dimensions, ScrollView, Linking, PanResponder, Platform,} from 'react-native';
+import {View, Text, TouchableOpacity, Modal, TextInput, StyleSheet, Dimensions, ScrollView, Linking, PanResponder, Platform, Pressable,} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import ShapeEditorModal from './ShapeEditorModal'; 
-
+document.addEventListener('contextmenu', event => event.preventDefault());
 //beta rotation
 const rotateShape = (shape) => {
   const newCells = shape.cells.map(({ row, col }) => ({ row: col, col: -row }));
@@ -37,8 +37,7 @@ const defaultShapes = [
     name: '1x1 Chair',
     cells: [
       { row: 0, col: 0 },
-      { row: 0, col: 0 },
-      { row: 0, col: 0 },
+   
     ],
     color: '#ffffff',
   },
@@ -99,7 +98,13 @@ export default function App() {
       setPreviewPos(null);
     },
   });
-
+  const rightClick = (startRow, startCol) => {
+    if (grid[startRow][startCol].occupied) {
+        const newGrid = grid.map(row => row.slice());
+        newGrid[startRow][startCol] = { occupied: false, color: null, label: '' };
+        setGrid(newGrid);
+    }
+  }
   const handlePlaceShape = (startRow, startCol) => {
     if (tool === 'erase') {
       if (grid[startRow][startCol].occupied) {
@@ -165,7 +170,7 @@ export default function App() {
         {row.map((cell, colIndex) => {
           const isPreview = previewCells.has(`${rowIndex},${colIndex}`);
           return (
-            <TouchableOpacity
+            <Pressable
               key={`cell-${rowIndex}-${colIndex}`}
               style={[
                 styles.cell,
@@ -181,13 +186,20 @@ export default function App() {
                   borderColor: '#000',
                 },
               ]}
-              onPress={() => handlePlaceShape(rowIndex, colIndex)}
-              activeOpacity={0.7}
+              onPointerDown={e => {
+            e.preventDefault();                
+            const btn = e.nativeEvent.button;  
+            if (btn === 0) {
+              handlePlaceShape(rowIndex, colIndex);
+            } else if (btn === 2) {
+              rightClick(rowIndex, colIndex);
+            }
+          }}
             >
               {cell.occupied && !isPreview ? (
                 <Text style={styles.cellLabel}>{cell.label}</Text>
               ) : null}
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </View>
@@ -236,12 +248,6 @@ export default function App() {
             <Text style={styles.buttonText}>Start</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.buttonlink}
-            onPress={() => Linking.openURL('https://www.google.com')}
-          >
-            <Text style={styles.buttonlinkText}>Noooo</Text>
-          </TouchableOpacity>
         </>
       ) : (
         <>
@@ -251,6 +257,7 @@ export default function App() {
               onLayout={onGridLayout}
               style={[styles.grid, { width: GRID_WIDTH, height: GRID_WIDTH }]}
               {...(Platform.OS === 'web' ? {} : panResponder.panHandlers)}
+              
               onMouseMove={
                 Platform.OS === 'web'
                   ? (e) => {
