@@ -51,7 +51,7 @@ const createEmptyGrid = (rows, cols) =>
 export default function App() {
   const getSize = () => Math.floor(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT * 0.75));
   const GRID_SIZE = getSize();
-
+  const [name, setName] = useState("");
   const [hidden, setHidden] = useState(false);
   const [started, setStarted] = useState(false);
   const [gridSize, setGridSize] = useState({ rows: 10, cols: 10 });
@@ -213,6 +213,7 @@ export default function App() {
       setGridSize({ rows, cols });
       setGrid(createEmptyGrid(rows, cols));
       setSettingsVisible(false);
+      setName("");
     }
   };
 
@@ -221,11 +222,19 @@ export default function App() {
     setShowEditor(false);
   };
   const loadGrid = async() => {
-    await load().then(gridData => {
-      setGrid(gridData)
-    }).catch(err => {
-      console.error('Failed to load grid:', err)
-    })
+    try {
+      const data = await load()              // returns { name, grid }
+      if (data && Array.isArray(data.grid)) {
+        setName(data.name || '')
+        setGrid(data.grid)
+        setGridSize({
+          rows: data.grid.length,
+          cols: data.grid[0]?.length || 0
+        })
+      }
+    } catch (err) {
+      console.error('Load failed:', err)
+    }
   }
   return (
     <View style={styles.container}>
@@ -257,7 +266,20 @@ export default function App() {
         </>
       ) : (
         <>
+          <TextInput style={{
+ 
+
+   width: 160,
+   height: 40,
+   borderWidth: 1,
+   borderColor: '#000',
+   padding: 10,
+   backgroundColor: '#fff',
+   margin: 20,
+   alignSelf: "flex-start"
+ }} placeholder='Untitled Design' value={name} onChangeText={setName} />
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            
             <View
               ref={gridRef}
               onLayout={onGridLayout}
@@ -336,7 +358,7 @@ export default function App() {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.addShapeButton}
-                onPress={() => save(grid)}
+                onPress={() => save(grid, name)}
                 >
                   <Text style={styles.shapeText}>Save</Text>
                 </TouchableOpacity>
