@@ -3,7 +3,9 @@ import {
 Modal,View,Text,TextInput,TouchableOpacity,StyleSheet,FlatList,
 } from 'react-native';
 
-const GRID_DIM = 4; 
+import ColorPicker from './ColorPicker';
+
+const GRID_DIM = 4;
 
 export default function ShapeEditorModal({ onClose, onSave }) {
   const [name, setName] = useState('');
@@ -21,35 +23,32 @@ export default function ShapeEditorModal({ onClose, onSave }) {
     setSelectedCells(newSet);
   };
 
+  const handleSave = () => {
+    if (!name.trim()) return;
+    if (selectedCells.size === 0) return;
 
-const handleSave = () => {
-  if (!name.trim()) return; 
-  if (selectedCells.size === 0) return; 
+    const cellsArr = Array.from(selectedCells).map(str => {
+      const [row, col] = str.split(',').map(Number);
+      return { row, col };
+    });
 
-  const cellsArr = Array.from(selectedCells).map(str => {
-    const [row, col] = str.split(',').map(Number);
-    return { row, col };
-  });
+    const rows = cellsArr.map(c => c.row);
+    const cols = cellsArr.map(c => c.col);
+    const minRow = Math.min(...rows);
+    const minCol = Math.min(...cols);
 
-  const rows = cellsArr.map(c => c.row);
-  const cols = cellsArr.map(c => c.col);
-  const minRow = Math.min(...rows);
-  const maxRow = Math.max(...rows);
-  const minCol = Math.min(...cols);
-  const maxCol = Math.max(...cols);
+    const trimmedCells = cellsArr.map(({ row, col }) => ({
+      row: row - minRow,
+      col: col - minCol,
+    }));
 
-  const trimmedCells = cellsArr.map(({ row, col }) => ({
-    row: row - minRow,
-    col: col - minCol,
-  }));
-
-  onSave({
-    id: `shape-${Date.now()}`,
-    name: name.trim(),
-    color,
-    cells: trimmedCells,
-  });
-};
+    onSave({
+      id: `shape-${Date.now()}`,
+      name: name.trim(),
+      color,
+      cells: trimmedCells,
+    });
+  };
 
   const renderCell = (row, col) => {
     const key = `${row},${col}`;
@@ -60,11 +59,15 @@ const handleSave = () => {
         onPress={() => toggleCell(row, col)}
         style={[
           styles.cell,
-          { backgroundColor: selected ? color : '#eee', borderColor: selected ? '#000' : '#999' },
+          {
+            backgroundColor: selected ? color : '#eee',
+            borderColor: selected ? '#000' : '#999',
+          },
         ]}
       />
     );
   };
+
   const renderGrid = () => {
     const rows = [];
     for (let r = 0; r < GRID_DIM; r++) {
@@ -86,18 +89,16 @@ const handleSave = () => {
       <View style={styles.modalOverlay}>
         <View style={styles.modalBox}>
           <Text style={styles.header}>Create New Shape</Text>
+
           <TextInput
             style={styles.input}
             placeholder="Shape name"
             value={name}
             onChangeText={setName}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Color (e.g. #3498db)"
-            value={color}
-            onChangeText={setColor}
-          />
+
+          <ColorPicker color={color} onColorChange={setColor} />
+
           <Text style={{ marginBottom: 5 }}>Select shape cells:</Text>
           <View style={styles.gridContainer}>{renderGrid()}</View>
 
@@ -187,4 +188,3 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
-
