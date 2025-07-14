@@ -1,8 +1,7 @@
 import React, { useState, useRef } from 'react';
-import {View, Text, TouchableOpacity, Modal, TextInput,StyleSheet,Dimensions,ScrollView,PanResponder,Platform,Pressable,Alert,} from 'react-native';
+import { View,  Text,  TouchableOpacity,  Modal, TextInput, StyleSheet,  Dimensions, ScrollView, PanResponder, Platform,  Pressable,Alert,} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import AntDesign from 'react-native-vector-icons/AntDesign'
 import ShapeEditorModal from './ShapeEditorModal';
 import { save, load } from './save';
 
@@ -28,23 +27,17 @@ const GRID_WIDTH = 550;
 
 const defaultShapes = [
   {
-    id: 'square2x2',
-    name: '2x2 Table',
-    cells: [
-      { row: 0, col: 0 },
-      { row: 0, col: 1 },
-      { row: 1, col: 0 },
-      { row: 1, col: 1 },
-    ],
-    color: '#ffffff',
-    component: <View style={{ backgroundColor: 'cornflowerblue', borderWidth: 1, height: 52, width: 52 }}></View>
+    id: 'table1x1',
+    name: 'Table',
+    cells: [{ row: 0, col: 0 }],
+    color: 'cornflowerblue',
+    // The component now fills the cell, borders are handled by the cell style
+    component: <View style={{ backgroundColor: 'cornflowerblue', height: '100%', width: '100%' }}></View>
   },
   {
-    id: 'rect1x3',
-    name: '1x1 Chair',
-    cells: [
-      { row: 0, col: 0 },
-    ],
+    id: 'chair1x1',
+    name: 'Chair',
+    cells: [{ row: 0, col: 0 }],
     color: '#ffffff',
     component: <FontAwesome5 name="chair" size={24} />
   },
@@ -94,10 +87,7 @@ export default function App() {
       const row = Math.floor(relativeY / cellSize);
       const col = Math.floor(relativeX / cellSize);
       if (
-        row >= 0 &&
-        col >= 0 &&
-        row < gridSize.rows &&
-        col < gridSize.cols
+        row >= 0 && col >= 0 && row < gridSize.rows && col < gridSize.cols
       ) {
         setPreviewPos(tool === 'place' ? { row, col } : null);
       } else {
@@ -121,7 +111,7 @@ export default function App() {
 
   const rightClick = (startRow, startCol) => {
     if (grid[startRow][startCol].occupied) {
-      const newGrid = grid.map(row => row.slice());
+      const newGrid = grid.map(row => [...row]);
       newGrid[startRow][startCol] = { occupied: false, color: null, label: '', comment: null };
       setGrid(newGrid);
     }
@@ -129,11 +119,7 @@ export default function App() {
 
   const handlePlaceShape = (startRow, startCol) => {
     if (tool === 'erase') {
-      if (grid[startRow][startCol].occupied) {
-        const newGrid = grid.map(row => row.slice());
-        newGrid[startRow][startCol] = { occupied: false, color: null, label: '', comment: null };
-        setGrid(newGrid);
-      }
+      rightClick(startRow, startCol);
       return;
     }
 
@@ -143,17 +129,13 @@ export default function App() {
       const r = startRow + row;
       const c = startCol + col;
       return (
-        r >= 0 &&
-        c >= 0 &&
-        r < gridSize.rows &&
-        c < gridSize.cols &&
-        !grid[r][c].occupied
+        r >= 0 && c >= 0 && r < gridSize.rows && c < gridSize.cols && !grid[r][c].occupied
       );
     });
 
     if (!canPlace) return;
 
-    const newGrid = grid.map(row => row.slice());
+    const newGrid = grid.map(row => [...row]);
 
     selectedShape.cells.forEach(({ row, col }) => {
       const r = startRow + row;
@@ -163,7 +145,7 @@ export default function App() {
         color: selectedShape.color,
         label: selectedShape.name,
         icon: selectedShape.component,
-        comment: null
+        comment: null,
       };
     });
 
@@ -174,13 +156,36 @@ export default function App() {
   const handleSaveComment = () => {
     if (selectedCell) {
       const { row, col } = selectedCell;
-      const newGrid = grid.map(gridRow => gridRow.slice());
+      const newGrid = grid.map(gridRow => [...gridRow]);
       newGrid[row][col].comment = currentComment;
       setGrid(newGrid);
       setCommentModalVisible(false);
       setSelectedCell(null);
       setCurrentComment('');
     }
+  };
+
+  const getTableBorders = (rowIndex, colIndex, currentGrid) => {
+    const isTable = (r, c) => {
+      return (
+        r >= 0 && r < gridSize.rows && c >= 0 && c < gridSize.cols &&
+        currentGrid[r][c].occupied && currentGrid[r][c].label.includes('Table')
+      );
+    };
+
+    const style = {
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
+      borderLeftWidth: 1,
+      borderRightWidth: 1,
+    };
+
+    if (isTable(rowIndex - 1, colIndex)) style.borderTopWidth = 0;
+    if (isTable(rowIndex + 1, colIndex)) style.borderBottomWidth = 0;
+    if (isTable(rowIndex, colIndex - 1)) style.borderLeftWidth = 0;
+    if (isTable(rowIndex, colIndex + 1)) style.borderRightWidth = 0;
+
+    return style;
   };
 
   const renderGrid = () => {
@@ -190,11 +195,7 @@ export default function App() {
         const r = previewPos.row + row;
         const c = previewPos.col + col;
         if (
-          r >= 0 &&
-          r < gridSize.rows &&
-          c >= 0 &&
-          c < gridSize.cols &&
-          !grid[r][c].occupied
+          r >= 0 && r < gridSize.rows && c >= 0 && c < gridSize.cols && !grid[r][c].occupied
         ) {
           previewCells.add(`${r},${c}`);
         }
@@ -205,46 +206,42 @@ export default function App() {
       <View style={styles.gridRow} key={`row-${rowIndex}`}>
         {row.map((cell, colIndex) => {
           const isPreview = previewCells.has(`${rowIndex},${colIndex}`);
+          
+          let tableBorderStyle = {};
+          if (cell.occupied && cell.label.includes('Table')) {
+            tableBorderStyle = getTableBorders(rowIndex, colIndex, grid);
+          }
+
           return (
             <Pressable
               key={`cell-${rowIndex}-${colIndex}`}
+              
               style={[
                 styles.cell,
                 {
                   width: cellSize,
                   height: cellSize,
-                  backgroundColor: cell.occupied
-                    ? cell.color
-                    : isPreview
-                      ? '#ccc'
-                      : '#eee',
-                  borderWidth: 1,
+                  backgroundColor: cell.occupied ? (cell.label.includes('Table') ? null : cell.color) : (isPreview ? '#ccc' : '#eee'),
                   borderColor: '#000',
                 },
+                tableBorderStyle, 
               ]}
               onPress={() => handleCellPress(rowIndex, colIndex)}
               onLongPress={() => {
-                if (cell.comment) {
-                  Alert.alert('Comment', cell.comment);
-                }
+                if (cell.comment) Alert.alert('Comment', cell.comment);
               }}
               onPointerDown={e => {
                 if (Platform.OS === 'web') {
                   e.preventDefault();
                   const btn = e.nativeEvent.button;
-                  if (btn === 0) {
-                    handleCellPress(rowIndex, colIndex);
-                  } else if (btn === 2) {
-                    rightClick(rowIndex, colIndex);
-                  }
+                  if (btn === 0) handleCellPress(rowIndex, colIndex);
+                  else if (btn === 2) rightClick(rowIndex, colIndex);
                 } else {
-                  handleCellPress(rowIndex, colIndex)
+                  handleCellPress(rowIndex, colIndex);
                 }
               }}
             >
-              {cell.occupied && !isPreview ? (
-                <View>{cell.icon}</View>
-              ) : null}
+              {cell.occupied && !isPreview ? <View style={{width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center'}}>{cell.icon}</View> : null}
               {cell.comment && (
                 <View style={styles.commentIcon}>
                   <FontAwesome5 name="comment-alt" size={12} color="black" />
@@ -284,7 +281,7 @@ export default function App() {
         setGrid(loadedGrid);
         setGridSize({
           rows: data.grid.length,
-          cols: data.grid[0]?.length || 0
+          cols: data.grid[0]?.length || 0,
         });
       }
     } catch (err) {
@@ -341,12 +338,7 @@ export default function App() {
                     const y = e.clientY - bounds.top;
                     const row = Math.floor(y / cellSize);
                     const col = Math.floor(x / cellSize);
-                    if (
-                      row >= 0 &&
-                      col >= 0 &&
-                      row < gridSize.rows &&
-                      col < gridSize.cols
-                    ) {
+                    if (row >= 0 && col >= 0 && row < gridSize.rows && col < gridSize.cols) {
                       setPreviewPos(tool === 'place' ? { row, col } : null);
                     } else {
                       setPreviewPos(null);
@@ -359,7 +351,6 @@ export default function App() {
               {renderGrid()}
             </View>
           </View>
-
           <View style={styles.bottomBar}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 1 }}>
               {shapes.map((shape) => (
@@ -367,7 +358,7 @@ export default function App() {
                   key={shape.id}
                   style={[
                     styles.shapeOption,
-                    { backgroundColor: shape.color },
+                    { backgroundColor: shape.id.includes('Table') ? shape.color : '#fff'},
                     tool === 'place' && selectedShape?.id === shape.id ? styles.selectedShape : null,
                   ]}
                   onPress={() => {
@@ -380,11 +371,7 @@ export default function App() {
               ))}
               <TouchableOpacity
                 key="eraser"
-                style={[
-                  styles.shapeOption,
-                  styles.eraserShape,
-                  tool === 'erase' ? styles.selectedShape : null,
-                ]}
+                style={[styles.shapeOption, styles.eraserShape, tool === 'erase' ? styles.selectedShape : null]}
                 onPress={() => {
                   setSelectedShape(null);
                   setTool('erase');
@@ -393,12 +380,10 @@ export default function App() {
                 <Text style={styles.shapeText}>Eraser</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[
-                  styles.shapeOption,
-                ]}
+                style={[styles.shapeOption, tool === 'comment' ? styles.selectedShape : null]}
                 onPress={() => {
                   setTool('comment');
-                  setSelectedShape("");
+                  setSelectedShape(null);
                 }}
               >
                 <Text style={styles.shapeText}>Comment</Text>
@@ -412,16 +397,10 @@ export default function App() {
               >
                 <Text style={styles.addShapeText}>+ Add Shape</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.addShapeButton}
-                onPress={() => save(grid, name)}
-              >
+              <TouchableOpacity style={styles.addShapeButton} onPress={() => save(grid, name)}>
                 <Text style={styles.shapeText}>Save</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.addShapeButton}
-                onPress={loadGrid}
-              >
+              <TouchableOpacity style={styles.addShapeButton} onPress={loadGrid}>
                 <Text style={styles.shapeText}>Load</Text>
               </TouchableOpacity>
             </ScrollView>
@@ -447,12 +426,11 @@ export default function App() {
               value={tempCols}
               onChangeText={setTempCols}
             />
-
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '100%', margin:10 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginTop: 10 }}>
               <TouchableOpacity style={styles.button} onPress={applySettings}>
                 <Text style={styles.buttonText}>Apply</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={()=>setSettingsVisible(false)}>
+              <TouchableOpacity style={styles.button} onPress={() => setSettingsVisible(false)}>
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
             </View>
@@ -460,8 +438,7 @@ export default function App() {
         </View>
       </Modal>
 
-      {/*COMMENT MODAL AHHAHHAHHAHAHAHHAHAHAAHAHHAAHAHHAAA */}
-      <Modal visible={commentModalVisible} transparent={true}>
+      <Modal visible={commentModalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={{ fontSize: 18, marginBottom: 10 }}>Add/Edit Comment</Text>
@@ -484,149 +461,148 @@ export default function App() {
         </View>
       </Modal>
 
-
-
-      {showEditor && (
-        <ShapeEditorModal onClose={() => setShowEditor(false)} onSave={handleAddNewShape} />
-      )}
+      {showEditor && <ShapeEditorModal onClose={() => setShowEditor(false)} onSave={handleAddNewShape} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: 60,
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  nameInput: {
-    width: 160,
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#000',
-    padding: 10,
-    backgroundColor: '#fff',
-    margin: 20,
-    alignSelf: "flex-start"
-  },
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderWidth: 2,
-    borderColor: '#000',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    marginBottom: 10,
-    marginHorizontal: 5
-  },
-  buttonText: {
-    fontSize: 18,
-    textAlign: 'center',
-  },
-  settingsIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#000',
-    zIndex: 999,
-  },
-  grid: {
-    marginHorizontal: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  gridRow: {
-    flexDirection: 'row',
-  },
-  cell: {
-    borderWidth: 1,
-    borderColor: '#000',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  commentIcon: {
-    position:'absolute',
-    top: 2,
-    right: 2,
-    borderRadius: 6,
-    padding: 2
-  },
-  bottomBar: {
-    width: '100%',
-    borderTopWidth: 2,
-    borderColor: '#000',
-    height: 100,
-    backgroundColor: '#ddd',
-    padding: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  shapeOption: {
-    borderWidth: 2,
-    borderColor: '#000',
-    padding: 10,
-    marginRight: 10,
-    borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  shapeText: {
-    color: '#000',
-  },
-  eraserShape: {
-    backgroundColor: '#bdc3c7',
-    borderColor: '#7f8c8d',
-  },
-  selectedShape: {
-    borderWidth: 3,
-    borderColor: 'blue',
-  },
-  addShapeButton: {
-    borderWidth: 2,
-    borderColor: '#000',
-    padding: 10,
-    borderRadius: 6,
-    marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  addShapeText: {
-    fontWeight: 'bold',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#000000aa',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    width: 350,
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#000',
-  },
-  input: {
-    borderWidth: 2,
-    borderColor: '#000',
-    width: '100%',
-    padding: 8,
-    marginVertical: 5,
-    borderRadius: 5,
-  },
-});
+    container: {
+      flex: 1,
+      backgroundColor: '#fff',
+      paddingTop: 60,
+    },
+    title: {
+      fontSize: 48,
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    nameInput: {
+      width: 160,
+      height: 40,
+      borderWidth: 1,
+      borderColor: '#000',
+      padding: 10,
+      backgroundColor: '#fff',
+      margin: 20,
+      alignSelf: "flex-start"
+    },
+    button: {
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderWidth: 2,
+      borderColor: '#000',
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      alignSelf: 'center',
+      marginBottom: 10,
+      marginHorizontal: 5
+    },
+    buttonText: {
+      fontSize: 18,
+      textAlign: 'center',
+    },
+    settingsIcon: {
+      position: 'absolute',
+      top: 10,
+      right: 10,
+      width: 40,
+      height: 40,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 2,
+      borderColor: '#000',
+      zIndex: 999,
+    },
+    grid: {
+      marginHorizontal: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: '#000',
+    },
+    gridRow: {
+      flexDirection: 'row',
+    },
+    cell: {
+      borderWidth: 1,
+      borderColor: '#000',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    commentIcon: {
+      position: 'absolute',
+      top: 2,
+      right: 2,
+      backgroundColor: 'rgba(255, 255, 0, 0.8)',
+      borderRadius: 6,
+      padding: 2
+    },
+    bottomBar: {
+      width: '100%',
+      borderTopWidth: 2,
+      borderColor: '#000',
+      height: 100,
+      backgroundColor: '#ddd',
+      padding: 10,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    shapeOption: {
+      borderWidth: 2,
+      borderColor: '#000',
+      padding: 10,
+      marginRight: 10,
+      borderRadius: 6,
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    shapeText: {
+      color: '#000',
+    },
+    eraserShape: {
+      backgroundColor: '#bdc3c7',
+      borderColor: '#7f8c8d',
+    },
+    selectedShape: {
+      borderWidth: 3,
+      borderColor: 'blue',
+    },
+    addShapeButton: {
+      borderWidth: 2,
+      borderColor: '#000',
+      padding: 10,
+      borderRadius: 6,
+      marginRight: 10,
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    addShapeText: {
+      fontWeight: 'bold',
+    },
+    modalContainer: {
+      flex: 1,
+      backgroundColor: '#000000aa',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      width: 350,
+      padding: 20,
+      backgroundColor: '#fff',
+      borderRadius: 8,
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: '#000',
+    },
+    input: {
+      borderWidth: 2,
+      borderColor: '#000',
+      width: '100%',
+      padding: 8,
+      marginVertical: 5,
+      borderRadius: 5,
+    },
+  });
