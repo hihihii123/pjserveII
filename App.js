@@ -447,9 +447,15 @@ export default function App() {
               value={tempCols}
               onChangeText={setTempCols}
             />
-            <TouchableOpacity style={styles.button} onPress={applySettings}>
-              <Text style={styles.buttonText}>Apply</Text>
-            </TouchableOpacity>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '100%', margin:10 }}>
+              <TouchableOpacity style={styles.button} onPress={applySettings}>
+                <Text style={styles.buttonText}>Apply</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.button} onPress={()=>setSettingsVisible(false)}>
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -607,7 +613,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    width: 320,
+    width: 350,
     padding: 20,
     backgroundColor: '#fff',
     borderRadius: 8,
