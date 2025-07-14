@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
 Modal,View,Text,TextInput,TouchableOpacity,StyleSheet,FlatList,
 } from 'react-native';
+import ColorPicker from './ColorPicker';
 
 const GRID_DIM = 4; 
 
@@ -92,6 +93,9 @@ const handleSave = () => {
             value={name}
             onChangeText={setName}
           />
+
+          <ColorPicker color={color} onColorChange={setColor} />
+              
           <TextInput
             style={styles.input}
             placeholder="Color (e.g. #3498db)"
