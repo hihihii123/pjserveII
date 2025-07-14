@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {View, Text, TouchableOpacity, Modal, TextInput, StyleSheet, Dimensions, ScrollView, Linking, PanResponder, Platform, Pressable,} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import ShapeEditorModal from './ShapeEditorModal'; 
 import { save, load } from './save';
 document.addEventListener('contextmenu', event => event.preventDefault());
@@ -31,6 +32,7 @@ const defaultShapes = [
       { row: 1, col: 1 },
     ],
     color: '#ffffff',
+    
   },
   {
     id: 'rect1x3',
@@ -40,6 +42,8 @@ const defaultShapes = [
    
     ],
     color: '#ffffff',
+    component: <FontAwesome5 name="chair" size={24}/>
+    
   },
 ];
 
@@ -140,6 +144,7 @@ export default function App() {
         occupied: true,
         color: selectedShape.color,
         label: selectedShape.name,
+        icon: selectedShape.component
       };
     });
 
@@ -197,7 +202,8 @@ export default function App() {
           }}
             >
               {cell.occupied && !isPreview ? (
-                <Text style={styles.cellLabel}>{cell.label}</Text>
+                //gang to change icon go to default shape array
+                <View>{cell.icon}</View>
               ) : null}
             </Pressable>
           );
@@ -236,6 +242,9 @@ export default function App() {
       console.error('Load failed:', err)
     }
   }
+
+
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
