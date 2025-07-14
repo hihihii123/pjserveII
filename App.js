@@ -32,7 +32,7 @@ const defaultShapes = [
       { row: 1, col: 1 },
     ],
     color: '#ffffff',
-    
+    component: <View style={{ backgroundColor:'cornflowerblue',borderWidth: 1, height: 52, width:52}}></View>
   },
   {
     id: 'rect1x3',
