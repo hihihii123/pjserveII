@@ -67,6 +67,18 @@ export default function App() {
   const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [currentComment, setCurrentComment] = useState('');
   const [selectedCell, setSelectedCell] = useState(null);
+  const [commentsList,setCommentsList] = useState([
+    {
+      id: 1,
+      name:'title1',
+      description: 'desc'
+    },
+    {
+      id: 2,
+      name:'title2',
+      description: 'desc'
+    },
+  ])
 
   const cellSize = GRID_WIDTH / Math.max(gridSize.rows, gridSize.cols);
 
@@ -324,33 +336,60 @@ export default function App() {
             value={name}
             onChangeText={setName}
           />
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <View
-              ref={gridRef}
-              onLayout={onGridLayout}
-              style={[styles.grid, { width: GRID_WIDTH, height: GRID_WIDTH }]}
-              {...(Platform.OS === 'web' ? {} : panResponder.panHandlers)}
-              onMouseMove={
-                Platform.OS === 'web'
-                  ? (e) => {
-                    const bounds = e.currentTarget.getBoundingClientRect();
-                    const x = e.clientX - bounds.left;
-                    const y = e.clientY - bounds.top;
-                    const row = Math.floor(y / cellSize);
-                    const col = Math.floor(x / cellSize);
-                    if (row >= 0 && col >= 0 && row < gridSize.rows && col < gridSize.cols) {
-                      setPreviewPos(tool === 'place' ? { row, col } : null);
-                    } else {
-                      setPreviewPos(null);
+            <View style={{ flex: 1,  alignItems: 'center', flexDirection:'row', justifyContent:'space-between' }}>
+              <Text style={styles.nameInput}>Testing</Text>
+              <View
+                ref={gridRef}
+                onLayout={onGridLayout}
+                style={[styles.grid, { width: GRID_WIDTH, height: GRID_WIDTH }]}
+                {...(Platform.OS === 'web' ? {} : panResponder.panHandlers)}
+                onMouseMove={
+                  Platform.OS === 'web'
+                    ? (e) => {
+                      const bounds = e.currentTarget.getBoundingClientRect();
+                      const x = e.clientX - bounds.left;
+                      const y = e.clientY - bounds.top;
+                      const row = Math.floor(y / cellSize);
+                      const col = Math.floor(x / cellSize);
+                      if (row >= 0 && col >= 0 && row < gridSize.rows && col < gridSize.cols) {
+                        setPreviewPos(tool === 'place' ? { row, col } : null);
+                      } else {
+                        setPreviewPos(null);
+                      }
                     }
-                  }
-                  : undefined
-              }
-              onMouseLeave={Platform.OS === 'web' ? () => setPreviewPos(null) : undefined}
-            >
-              {renderGrid()}
+                    : undefined
+                }
+                onMouseLeave={Platform.OS === 'web' ? () => setPreviewPos(null) : undefined}
+              >
+                {renderGrid()}
+              </View>
+              {/*COMMENTS FUNCTION GANG ILY */}
+              <View style={styles.commentsSection}>
+                <Text style={{fontSize: 20, fontWeight:'bold'}}>Comments</Text>
+                <ScrollView>
+                  {commentsList.map((item)=>{
+                    return(
+                      <View style={{
+                        borderWidth:1,
+                        borderRadius:10,
+                        padding: 10,
+                        margin: 5,
+                        width: 150,
+                        height: 60
+                      }}>
+                        <Text style={{fontWeight:'bold'}}>{item.name}</Text>
+                        <Text>{item.description}</Text>
+                      </View>    
+                    )
+                  })}
+
+                  
+
+
+                </ScrollView>
+              </View>
+
             </View>
-          </View>
           <View style={styles.bottomBar}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 1 }}>
               {shapes.map((shape) => (
@@ -487,6 +526,19 @@ const styles = StyleSheet.create({
       margin: 20,
       alignSelf: "flex-start"
     },
+    commentsSection: {
+      flexDirection: 'column',
+      height: 500,
+      width: 200,
+      // width: 100
+      // height: 100,
+      borderWidth:1,
+      borderColor: '#000',
+      padding: 10,
+      backgroundColor: '#fff',
+      margin: 20,
+    },
+
     button: {
       paddingVertical: 10,
       paddingHorizontal: 20,
