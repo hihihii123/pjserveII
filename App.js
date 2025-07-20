@@ -67,18 +67,8 @@ export default function App() {
   const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [currentComment, setCurrentComment] = useState('');
   const [selectedCell, setSelectedCell] = useState(null);
-  const [commentsList,setCommentsList] = useState([
-    {
-      id: 1,
-      name:'title1',
-      description: 'desc'
-    },
-    {
-      id: 2,
-      name:'title2',
-      description: 'desc'
-    },
-  ])
+  const [highlightedComment, setHighlightedComment] = useState(null);
+
 
   const cellSize = GRID_WIDTH / Math.max(gridSize.rows, gridSize.cols);
 
@@ -199,6 +189,27 @@ export default function App() {
 
     return style;
   };
+  
+  const getCommentsFromGrid = () => {
+    const comments = [];
+    grid.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+            if (cell.comment) {
+                comments.push({
+                    id: `${rowIndex}-${colIndex}`,
+                    name: `Comment at [${rowIndex + 1}, ${colIndex + 1}]`,
+                    description: cell.comment,
+                    rowIndex,
+                    colIndex
+                });
+            }
+        });
+    });
+    return comments;
+  };
+
+  const commentsOnGrid = getCommentsFromGrid();
+
 
   const renderGrid = () => {
     const previewCells = new Set();
@@ -218,6 +229,8 @@ export default function App() {
       <View style={styles.gridRow} key={`row-${rowIndex}`}>
         {row.map((cell, colIndex) => {
           const isPreview = previewCells.has(`${rowIndex},${colIndex}`);
+          const isHighlighted = highlightedComment?.rowIndex === rowIndex && highlightedComment?.colIndex === colIndex;
+
           
           let tableBorderStyle = {};
           if (cell.occupied && cell.label.includes('Table')) {
@@ -237,6 +250,7 @@ export default function App() {
                   borderColor: '#000',
                 },
                 tableBorderStyle, 
+                isHighlighted && styles.commentHighlight,
               ]}
               onPress={() => handleCellPress(rowIndex, colIndex)}
               onLongPress={() => {
@@ -367,25 +381,22 @@ export default function App() {
               <View style={styles.commentsSection}>
                 <Text style={{fontSize: 20, fontWeight:'bold'}}>Comments</Text>
                 <ScrollView>
-                  {commentsList.map((item)=>{
+                {commentsOnGrid.map((item) => {
+                    const isCommentHighlighted = highlightedComment?.rowIndex === item.rowIndex && highlightedComment?.colIndex === item.colIndex;
                     return(
-                      <View style={{
-                        borderWidth:1,
-                        borderRadius:10,
-                        padding: 10,
-                        margin: 5,
-                        width: 150,
-                        height: 60
-                      }}>
+                      <TouchableOpacity
+                        key={item.id}
+                        style={[
+                          styles.commentItem,
+                          isCommentHighlighted && styles.highlightedCommentItem
+                        ]}
+                        onPress={() => {isCommentHighlighted ? setHighlightedComment(null):setHighlightedComment({ rowIndex: item.rowIndex, colIndex: item.colIndex })}}
+                      >
                         <Text style={{fontWeight:'bold'}}>{item.name}</Text>
                         <Text>{item.description}</Text>
-                      </View>    
+                      </TouchableOpacity>    
                     )
                   })}
-
-                  
-
-
                 </ScrollView>
               </View>
 
@@ -657,4 +668,22 @@ const styles = StyleSheet.create({
       marginVertical: 5,
       borderRadius: 5,
     },
+    commentHighlight: {
+        borderColor: 'red',
+        borderWidth: 3,
+      },
+  
+      commentItem: {
+        borderWidth:1,
+        borderRadius:10,
+        padding: 10,
+        marginVertical: 5,
+        borderColor: '#ccc',
+        width: 150,
+      },
+  
+      highlightedCommentItem: {
+        borderColor: 'red',
+        borderWidth: 2,
+      },
   });
