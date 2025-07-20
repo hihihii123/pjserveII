@@ -377,6 +377,12 @@ export default function App() {
               {tool == 'place' || tool =='erase' ?
               <View style={styles.leftSection}>
                 
+
+                {tool == 'place' &&
+                <View>
+                   <Text style={{fontWeight:'bold'}}>Eraser</Text>
+
+                </View>}
                 
 
                 {tool == 'erase' && 
