@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import ShapeEditorModal from './ShapeEditorModal';
 import { save, load } from './save';
+import Slider from '@react-native-community/slider';
 
 if (Platform.OS === 'web') {
   document.addEventListener('contextmenu', event => event.preventDefault());
@@ -48,6 +49,7 @@ const createEmptyGrid = (rows, cols) =>
     Array.from({ length: cols }, () => ({ occupied: false, color: null, label: '', comment: null }))
   );
 
+
 export default function App() {
   const getSize = () => Math.floor(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT * 0.75));
   const GRID_SIZE = getSize();
@@ -63,11 +65,12 @@ export default function App() {
   const [selectedShape, setSelectedShape] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
   const [previewPos, setPreviewPos] = useState(null);
-  const [tool, setTool] = useState('place');
+  const [tool, setTool] = useState(null);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [currentComment, setCurrentComment] = useState('');
   const [selectedCell, setSelectedCell] = useState(null);
   const [highlightedComment, setHighlightedComment] = useState(null);
+  const [eraseSize,setEraseSize] = useState(1)
 
 
   const cellSize = GRID_WIDTH / Math.max(gridSize.rows, gridSize.cols);
@@ -113,8 +116,23 @@ export default function App() {
 
   const rightClick = (startRow, startCol) => {
     if (grid[startRow][startCol].occupied) {
+      rowCounter = 0
+      columnCounter = 0
       const newGrid = grid.map(row => [...row]);
-      newGrid[startRow][startCol] = { occupied: false, color: null, label: '', comment: null };
+      while (rowCounter < eraseSize) {
+        if (startRow + rowCounter <= gridSize.cols) {
+          while (columnCounter < eraseSize) {
+            if (startCol + eraseSize <= gridSize.rows) {
+              newGrid[startRow + rowCounter][startCol + columnCounter] = { occupied: false, color: null, label: '', comment: null };
+            }
+
+            columnCounter = columnCounter + 1;
+          };
+          columnCounter = 0;
+        }
+        rowCounter = rowCounter + 1;
+      }
+
       setGrid(newGrid);
     }
   };
@@ -351,8 +369,38 @@ export default function App() {
             onChangeText={setName}
           />
             <View style={{ flex: 1,  alignItems: 'center', flexDirection:'row', justifyContent:'space-between' }}>
+              {/* 
+              TESTING SETTINGS SIDEBAR
               <Text style={styles.nameInput}>Testing</Text>
-              <View
+              */}
+
+              {tool == 'place' || tool =='erase' ?
+              <View style={styles.leftSection}>
+                
+                
+
+                {tool == 'erase' && 
+                <View>
+                  <Text style={{fontWeight:'bold'}}>Eraser</Text>
+                  <Text style={{margin:10}}>Size: {eraseSize} x {eraseSize}</Text>
+                  <Slider
+                    style={{width: 170, height: 40}}
+                    minimumValue={1}
+                    maximumValue={Math.max(gridSize.rows,gridSize.cols)}
+                    minimumTrackTintColor="#858585"
+                    maximumTrackTintColor="#000000"
+                    value={eraseSize}
+                    onValueChange={(value)=>setEraseSize(Math.round(value))}
+                  />
+                </View>}
+              </View>
+              :
+              <View style={{width:200,padding: 10,margin: 20,}}></View>
+              }
+
+
+
+               <View
                 ref={gridRef}
                 onLayout={onGridLayout}
                 style={[styles.grid, { width: GRID_WIDTH, height: GRID_WIDTH }]}
@@ -541,6 +589,20 @@ const styles = StyleSheet.create({
       flexDirection: 'column',
       height: 500,
       width: 200,
+      // width: 100
+      // height: 100,
+      borderWidth:1,
+      borderColor: '#000',
+      padding: 10,
+      backgroundColor: '#fff',
+      margin: 20,
+    },
+
+    leftSection: {
+      flexDirection: 'column',
+      flexWrap:'wrap',
+      width: 200,
+      
       // width: 100
       // height: 100,
       borderWidth:1,

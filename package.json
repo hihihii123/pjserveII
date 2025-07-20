@@ -9,19 +9,16 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~5.0.4",
+    "@react-native-community/slider": "^4.5.7",
     "expo": "~53.0.13",
-    "tinycolor2": "*",
-    "react-native-svg": "15.8.0",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
-    "react-native": "0.79.4",
     "react-dom": "19.0.0",
+    "react-native": "0.79.4",
+    "react-native-svg": "15.8.0",
     "react-native-web": "^0.20.0",
-    "@expo/metro-runtime": "~5.0.4",
-    "react-native-vector-icons/Ionicons": "*",
-    "react-native-vector-icons/FontAwesome5": "*",
-    "react-native-vector-icons/AntDesign": "*",
-    "react-native-vector-icons": "10.2.0"
+    "tinycolor2": "*"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
