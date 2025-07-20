@@ -380,8 +380,7 @@ export default function App() {
 
                 {tool == 'place' &&
                 <View>
-                   <Text style={{fontWeight:'bold'}}>Eraser</Text>
-
+                   <Text style={{fontWeight:'bold'}}>hi</Text>
                 </View>}
                 
 
