@@ -60,22 +60,14 @@ const defaultShapes = [
     name: "Table",
     cells: [{ row: 0, col: 0 }],
     color: tableColour,
-    component: (
-      <View
-        style={{
-          backgroundColor: tableColour,
-          height: "100%",
-          width: "100%",
-        }}
-      ></View>
-    ),
+   
   },
   {
     id: "chair1x1",
     name: "Chair",
     cells: [{ row: 0, col: 0 }],
     color: "#ffffff",
-    component: <FontAwesome5 name="chair" size={24} />,
+   
   },
 ];
   useEffect(() => {
@@ -219,7 +211,6 @@ const defaultShapes = [
         occupied: true,
         color: selectedShape.color,
         label: selectedShape.name,
-        icon: selectedShape.component,
         comment: null,
       };
     });
@@ -326,10 +317,8 @@ const defaultShapes = [
                 {
                   width: cellSize,
                   height: cellSize,
-                  backgroundColor: cell.occupied
-                    ? cell.label.includes("Table")
-                      ? null
-                      : cell.color
+                  backgroundColor: cell.occupied ?
+                    cell.color
                     : isPreview
                     ? "#ccc"
                     : "#eee",
@@ -362,7 +351,15 @@ const defaultShapes = [
                     alignItems: "center",
                   }}
                 >
-                  {cell.icon}
+                  {cell.label === "Chair" ? (
+                    <FontAwesome5 name="chair" size={24} />
+                  ) : (<View
+        style={{
+          backgroundColor: cell.color,
+          height: "100%",
+          width: "100%",
+        }}
+      ></View>)}
                 </View>
               ) : null}
               {cell.comment && (
