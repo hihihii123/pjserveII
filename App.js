@@ -19,6 +19,7 @@ import ShapeEditorModal from "./ShapeEditorModal";
 import { save, load } from "./save";
 import Slider from "@react-native-community/slider";
 import ColorPicker from "./ColorPicker";
+import icon from "./assets/official_icon.png";
 
 if (Platform.OS === "web") {
   document.addEventListener("contextmenu", (event) => event.preventDefault());
