@@ -10,7 +10,7 @@ export default function ShapeEditorModal({ onClose, onSave }) {
   const [name, setName] = useState('');
   const [color, setColor] = useState('#3498db');
   const [selectedCells, setSelectedCells] = useState(new Set());
-
+  
   const toggleCell = (row, col) => {
     const key = `${row},${col}`;
     const newSet = new Set(selectedCells);

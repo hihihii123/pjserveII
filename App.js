@@ -71,7 +71,7 @@ export default function App() {
   const [selectedCell, setSelectedCell] = useState(null);
   const [highlightedComment, setHighlightedComment] = useState(null);
   const [eraseSize,setEraseSize] = useState(1)
-
+  const [tableColor,setTableColor] = useState(null)
 
   const cellSize = GRID_WIDTH / Math.max(gridSize.rows, gridSize.cols);
 
@@ -118,6 +118,7 @@ export default function App() {
     if (grid[startRow][startCol].occupied) {
       rowCounter = 0
       columnCounter = 0
+
       const newGrid = grid.map(row => [...row]);
       while (rowCounter < eraseSize) {
         if (startRow + rowCounter <= gridSize.cols) {
@@ -125,14 +126,12 @@ export default function App() {
             if (startCol + eraseSize <= gridSize.rows) {
               newGrid[startRow + rowCounter][startCol + columnCounter] = { occupied: false, color: null, label: '', comment: null };
             }
-
             columnCounter = columnCounter + 1;
           };
           columnCounter = 0;
         }
         rowCounter = rowCounter + 1;
       }
-
       setGrid(newGrid);
     }
   };
@@ -181,7 +180,7 @@ export default function App() {
       setGrid(newGrid);
       setCommentModalVisible(false);
       setSelectedCell(null);
-      setCurrentComment('');
+      setCurrentComment(null);
     }
   };
 
@@ -380,7 +379,8 @@ export default function App() {
 
                 {tool == 'place' &&
                 <View>
-                   <Text style={{fontWeight:'bold'}}>hi</Text>
+                   <Text style={{fontWeight:'bold'}}>{selectedShape.name}</Text>
+                   
                 </View>}
                 
 
@@ -494,12 +494,13 @@ export default function App() {
               <TouchableOpacity
                 style={styles.addShapeButton}
                 onPress={() => {
-                  setShowEditor(true);
-                  setTool('place');
+                  setShowEditor(true)
+                  setTool(null);
                 }}
               >
                 <Text style={styles.addShapeText}>+ Add Shape</Text>
               </TouchableOpacity>
+
               <TouchableOpacity style={styles.addShapeButton} onPress={() => save(grid, name)}>
                 <Text style={styles.shapeText}>Save</Text>
               </TouchableOpacity>
@@ -563,6 +564,8 @@ export default function App() {
           </View>
         </View>
       </Modal>
+
+      
 
       {showEditor && <ShapeEditorModal onClose={() => setShowEditor(false)} onSave={handleAddNewShape} />}
     </View>
