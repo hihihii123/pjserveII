@@ -232,6 +232,12 @@ const defaultShapes = [
     }
   };
 
+  const handleResolveComment = (rowIndex, colIndex) => {
+    const newGrid = [...grid];
+    newGrid[rowIndex][colIndex].comment = null;
+    setGrid(newGrid);
+  };
+
   const getTableBorders = (rowIndex, colIndex, currentGrid) => {
     const isTable = (r, c) => {
       return (
@@ -542,24 +548,33 @@ const defaultShapes = [
                     highlightedComment?.rowIndex === item.rowIndex &&
                     highlightedComment?.colIndex === item.colIndex;
                   return (
-                    <TouchableOpacity
+                    <View
                       key={item.id}
                       style={[
                         styles.commentItem,
                         isCommentHighlighted && styles.highlightedCommentItem,
                       ]}
-                      onPress={() => {
-                        isCommentHighlighted
-                          ? setHighlightedComment(null)
-                          : setHighlightedComment({
-                              rowIndex: item.rowIndex,
-                              colIndex: item.colIndex,
-                            });
-                      }}
                     >
-                      <Text style={{ fontWeight: "bold" }}>{item.name}</Text>
-                      <Text>{item.description}</Text>
-                    </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          isCommentHighlighted
+                            ? setHighlightedComment(null)
+                            : setHighlightedComment({
+                                rowIndex: item.rowIndex,
+                                colIndex: item.colIndex,
+                              });
+                        }}
+                      >
+                        <Text style={{ fontWeight: "bold" }}>{item.name}</Text>
+                        <Text>{item.description}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.resolveButton}
+                        onPress={() => handleResolveComment(item.rowIndex, item.colIndex)}
+                      >
+                        <Text style={styles.resolveButtonText}>Resolve</Text>
+                      </TouchableOpacity>
+                    </View>
                   );
                 })}
               </ScrollView>
@@ -940,5 +955,16 @@ const styles = StyleSheet.create({
   highlightedCommentItem: {
     borderColor: "red",
     borderWidth: 2,
+  },
+  resolveButton: {
+    backgroundColor: "#27ae60",
+    padding: 8,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  resolveButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
