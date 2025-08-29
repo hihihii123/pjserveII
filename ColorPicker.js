@@ -40,7 +40,6 @@ export default function ColorPicker({ color, onColorChange }) {
   const [hue, setHue] = useState(0);
   const [brightness, setBrightness] = useState(1);
   const [saturation, setSaturation] = useState(1);
-  let currentHue = 0
 
   const updateColor = (h = hue, s = saturation, v = brightness) => {
     const hex = tinycolor({ h, s, v }).toHexString();
@@ -49,7 +48,6 @@ export default function ColorPicker({ color, onColorChange }) {
   };
 
   const currentColor = tinycolor({ h: hue, s: saturation, v: brightness }).toHexString();
-  const color = currentColor
   
   const handleWheelTouch = (evt) => {
     const { locationX, locationY } = evt.nativeEvent;
