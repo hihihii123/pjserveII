@@ -36,7 +36,7 @@ const generateColorWheel = () => {
   return paths;
 };
 
-export default function ColorPicker({ currentColor, onColorChange }) {
+export default function ColorPicker({ color, onColorChange }) {
   const [hue, setHue] = useState(0);
   const [brightness, setBrightness] = useState(1);
   const [saturation, setSaturation] = useState(1);
@@ -49,6 +49,7 @@ export default function ColorPicker({ currentColor, onColorChange }) {
   };
 
   const currentColor = tinycolor({ h: hue, s: saturation, v: brightness }).toHexString();
+  const color = currentColor
   
   const handleWheelTouch = (evt) => {
     const { locationX, locationY } = evt.nativeEvent;
