@@ -40,9 +40,11 @@ export default function ColorPicker({ color, onColorChange }) {
   const [hue, setHue] = useState(0);
   const [brightness, setBrightness] = useState(1);
   const [saturation, setSaturation] = useState(1);
+  let currentHue = 0
 
   const updateColor = (h = hue, s = saturation, v = brightness) => {
     const hex = tinycolor({ h, s, v }).toHexString();
+    let currentHue = h
     onColorChange(hex);
   };
 
@@ -60,6 +62,7 @@ export default function ColorPicker({ color, onColorChange }) {
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
     const newHue = (angle + 360) % 360;
     setHue(newHue);
+    let currentHue = newHue;
     updateColor(newHue, saturation, brightness);
   };
 
@@ -71,7 +74,7 @@ export default function ColorPicker({ color, onColorChange }) {
         const clamped = Math.max(0, Math.min(layoutX, SLIDER_WIDTH));
         const value = clamped / SLIDER_WIDTH;
         setBrightness(value);
-        updateColor(hue, saturation, value);
+        updateColor(currentHue, saturation, value);
       },
     })
   ).current;
@@ -84,7 +87,7 @@ export default function ColorPicker({ color, onColorChange }) {
         const clamped = Math.max(0, Math.min(layoutX, SLIDER_WIDTH));
         const value = clamped / SLIDER_WIDTH;
         setSaturation(value);
-        updateColor(hue, value, brightness);
+        updateColor(currentHue, value, brightness);
       },
     })
   ).current;
