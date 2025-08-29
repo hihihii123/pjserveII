@@ -46,6 +46,8 @@ export default function ColorPicker({ color, onColorChange }) {
     onColorChange(hex);
   };
 
+  const currentColor = tinycolor({ h: hue, s: saturation, v: brightness }).toHexString();
+  
   const handleWheelTouch = (evt) => {
     const { locationX, locationY } = evt.nativeEvent;
     const center = WHEEL_SIZE / 2;
@@ -146,7 +148,7 @@ export default function ColorPicker({ color, onColorChange }) {
         </Svg>
       </View>
 
-      <View style={[styles.colorPreview, { backgroundColor: color }]} />
+      <View style={[styles.colorPreview, { backgroundColor: currentColor }]} />
     </View>
   );
 }
