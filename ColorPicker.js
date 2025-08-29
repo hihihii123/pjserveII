@@ -36,7 +36,7 @@ const generateColorWheel = () => {
   return paths;
 };
 
-export default function ColorPicker({ color, onColorChange }) {
+export default function ColorPicker({ currentColor, onColorChange }) {
   const [hue, setHue] = useState(0);
   const [brightness, setBrightness] = useState(1);
   const [saturation, setSaturation] = useState(1);
