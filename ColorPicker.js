@@ -1,11 +1,10 @@
 // ColorPicker.js
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   PanResponder,
   StyleSheet,
   Text,
-  Animated,
 } from 'react-native';
 import Svg, { Path, Defs, LinearGradient, Stop, Circle } from 'react-native-svg';
 import tinycolor from 'tinycolor2';
@@ -41,14 +40,24 @@ export default function ColorPicker({ color, onColorChange }) {
   const [brightness, setBrightness] = useState(1);
   const [saturation, setSaturation] = useState(1);
 
+  // Update parent when internal state changes
   const updateColor = (h = hue, s = saturation, v = brightness) => {
     const hex = tinycolor({ h, s, v }).toHexString();
-    let currentHue = h
     onColorChange(hex);
   };
 
+  // Sync with external `color` prop (optional)
+  useEffect(() => {
+    if (color) {
+      const { h, s, v } = tinycolor(color).toHsv();
+      setHue(h);
+      setSaturation(s);
+      setBrightness(v);
+    }
+  }, [color]);
+
   const currentColor = tinycolor({ h: hue, s: saturation, v: brightness }).toHexString();
-  
+
   const handleWheelTouch = (evt) => {
     const { locationX, locationY } = evt.nativeEvent;
     const center = WHEEL_SIZE / 2;
@@ -61,7 +70,6 @@ export default function ColorPicker({ color, onColorChange }) {
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
     const newHue = (angle + 360) % 360;
     setHue(newHue);
-    let currentHue = newHue;
     updateColor(newHue, saturation, brightness);
   };
 
@@ -73,7 +81,7 @@ export default function ColorPicker({ color, onColorChange }) {
         const clamped = Math.max(0, Math.min(layoutX, SLIDER_WIDTH));
         const value = clamped / SLIDER_WIDTH;
         setBrightness(value);
-        updateColor(currentHue, saturation, value);
+        updateColor(hue, saturation, value);
       },
     })
   ).current;
@@ -86,7 +94,7 @@ export default function ColorPicker({ color, onColorChange }) {
         const clamped = Math.max(0, Math.min(layoutX, SLIDER_WIDTH));
         const value = clamped / SLIDER_WIDTH;
         setSaturation(value);
-        updateColor(currentHue, value, brightness);
+        updateColor(hue, value, brightness);
       },
     })
   ).current;
@@ -99,7 +107,9 @@ export default function ColorPicker({ color, onColorChange }) {
         onResponderGrant={handleWheelTouch}
         onResponderMove={handleWheelTouch}
       >
-        <Svg width={WHEEL_SIZE} height={WHEEL_SIZE}>{generateColorWheel()}</Svg>
+        <Svg width={WHEEL_SIZE} height={WHEEL_SIZE}>
+          {generateColorWheel()}
+        </Svg>
       </View>
 
       <Text style={styles.label}>Brightness</Text>
