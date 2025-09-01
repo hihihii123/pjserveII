@@ -431,7 +431,7 @@ const defaultShapes = [
         <Icon name="settings-outline" size={24} color="black" />
       </TouchableOpacity>
 
-      {!hidden && <Text style={styles.title}>GriDesigner 1.0.0</Text>}
+      {!hidden && <Text style={styles.title}>GriDesigner</Text>}
 
       {!started ? (
         <>
