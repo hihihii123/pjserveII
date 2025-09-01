@@ -58,21 +58,10 @@ export default function App() {
 const [colourpickervisible, setcolourpickervisible] = useState(false);
 
 const defaultShapes = [
-  {
-    id: "table1x1",
-    name: "Table",
-    cells: [{ row: 0, col: 0 }],
-    color: tableColour,
-   
-  },
-  {
-    id: "chair1x1",
-    name: "Chair",
-    cells: [{ row: 0, col: 0 }],
-    color: "#ffffff",
-   
-  },
+  { id: "table1x1", name: "Table", type: "table", cells:[{row:0,col:0}], color: tableColour },
+  { id: "chair1x1", name: "Chair", type: "chair", cells:[{row:0,col:0}], color: "#ffffff" },
 ];
+
   useEffect(() => {
     setShapes((prev) =>
       prev.map((s) =>
@@ -94,6 +83,20 @@ const defaultShapes = [
       )
     );
   }, [tableColour]);
+
+  useEffect(() => {
+    const onKey = e => {
+      if (tool === "place" && selectedShape && (e.key === "r" || e.key === "R")) {
+        setSelectedShape(prev => rotateShape(prev));
+      }
+    };
+    if (Platform.OS === "web") window.addEventListener("keydown", onKey);
+    return () => {
+      if (Platform.OS === "web") window.removeEventListener("keydown", onKey);
+    };
+  }, [tool, selectedShape]);
+
+
   const getSize = () =>
     Math.floor(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT * 0.75));
   const GRID_SIZE = getSize();
@@ -157,30 +160,21 @@ const defaultShapes = [
   };
 
   const rightClick = (startRow, startCol) => {
-    if (grid[startRow][startCol].occupied) {
-      rowCounter = 0;
-      columnCounter = 0;
+    if (!grid[startRow][startCol].occupied) return;
 
-      const newGrid = grid.map((row) => [...row]);
-      while (rowCounter < eraseSize) {
-        if (startRow + rowCounter <= gridSize.cols) {
-          while (columnCounter < eraseSize) {
-            if (startCol + eraseSize <= gridSize.rows) {
-              newGrid[startRow + rowCounter][startCol + columnCounter] = {
-                occupied: false,
-                color: null,
-                label: "",
-                comment: null,
-              };
-            }
-            columnCounter = columnCounter + 1;
-          }
-          columnCounter = 0;
+    const newGrid = grid.map(row => row.map(cell => ({ ...cell })));
+
+    for (let dr = 0; dr < eraseSize; dr++) {
+      for (let dc = 0; dc < eraseSize; dc++) {
+        const r = startRow + dr;
+        const c = startCol + dc;
+        if (r >= 0 && r < gridSize.rows && c >= 0 && c < gridSize.cols) {
+          newGrid[r][c] = { occupied: false, color: null, label: "", comment: null };
         }
-        rowCounter = rowCounter + 1;
       }
-      setGrid(newGrid);
     }
+
+    setGrid(newGrid);
   };
 
   const handlePlaceShape = (startRow, startCol) => {
@@ -214,6 +208,7 @@ const defaultShapes = [
         occupied: true,
         color: selectedShape.color,
         label: selectedShape.name,
+        type: selectedShape.type,
         comment: null,
       };
     });
@@ -230,7 +225,7 @@ const defaultShapes = [
       setGrid(newGrid);
       setCommentModalVisible(false);
       setSelectedCell(null);
-      setCurrentComment(null);
+      setCurrentComment("");
     }
   };
 
@@ -241,16 +236,10 @@ const defaultShapes = [
   };
 
   const getTableBorders = (rowIndex, colIndex, currentGrid) => {
-    const isTable = (r, c) => {
-      return (
-        r >= 0 &&
-        r < gridSize.rows &&
-        c >= 0 &&
-        c < gridSize.cols &&
-        currentGrid[r][c].occupied &&
-        currentGrid[r][c].label.includes("Table")
-      );
-    };
+    const isTable = (r, c) =>
+  r >= 0 && r < gridSize.rows && c >= 0 && c < gridSize.cols &&
+  currentGrid[r][c].occupied && currentGrid[r][c].label === "Table";
+
 
     const style = {
       borderTopWidth: 1,
@@ -497,6 +486,7 @@ const defaultShapes = [
                       style={{ width: 170, height: 40 }}
                       minimumValue={1}
                       maximumValue={Math.max(gridSize.rows, gridSize.cols)}
+                      step={1}
                       minimumTrackTintColor="#858585"
                       maximumTrackTintColor="#000000"
                       value={eraseSize}
@@ -541,7 +531,6 @@ const defaultShapes = [
             >
               {renderGrid()}
             </View>
-            {/*COMMENTS FUNCTION GANG ILY */}
             <View style={styles.commentsSection}>
               <Text style={{ fontSize: 20, fontWeight: "bold" }}>Comments</Text>
               <ScrollView>
