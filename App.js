@@ -59,21 +59,10 @@ export default function App() {
 const [colourpickervisible, setcolourpickervisible] = useState(false);
 
 const defaultShapes = [
-  {
-    id: "table1x1",
-    name: "Table",
-    cells: [{ row: 0, col: 0 }],
-    color: tableColour,
-   
-  },
-  {
-    id: "chair1x1",
-    name: "Chair",
-    cells: [{ row: 0, col: 0 }],
-    color: "#ffffff",
-   
-  },
+  { id: "table1x1", name: "Table", type: "table", cells:[{row:0,col:0}], color: tableColour },
+  { id: "chair1x1", name: "Chair", type: "chair", cells:[{row:0,col:0}], color: "#ffffff" },
 ];
+
   useEffect(() => {
     setShapes((prev) =>
       prev.map((s) =>
